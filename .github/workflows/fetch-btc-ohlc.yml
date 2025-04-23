@@ -1,0 +1,32 @@
+name: Coletar dados OHLC do BTC
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # Roda todos os dias às 09:00 UTC
+  workflow_dispatch:
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Clonar repositório
+      uses: actions/checkout@v3
+
+    - name: Instalar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Instalar dependências
+      run: |
+        pip install requests
+
+    - name: Executar script de coleta e salvar JSON
+      run: python src/save_to_json.py
+
+    - name: Upload do JSON como artefato
+      uses: actions/upload-artifact@v3
+      with:
+        name: dados_ohlc_btc
+        path: data/bronze/*.json
