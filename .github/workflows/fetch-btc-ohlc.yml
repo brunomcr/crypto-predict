@@ -2,7 +2,7 @@ name: Coletar dados OHLC do BTC
 
 on:
   schedule:
-    - cron: '0 9 * * *'  # Roda todos os dias às 09:00 UTC
+    - cron: '0 9 * * *'  # Executa todos os dias às 09:00 UTC
   workflow_dispatch:      # Permite execução manual
 
 jobs:
@@ -26,10 +26,11 @@ jobs:
 
     - name: Verificar arquivos gerados
       run: |
-        echo "📁 Listando conteúdo da pasta bronze:"
-        ls -la data/bronze
+        echo "📁 Verificando arquivos na pasta data/bronze:"
+        ls -la data/bronze || echo "⚠️ Nenhum arquivo encontrado"
 
     - name: Fazer upload do JSON como artefato
+      if: success()
       uses: actions/upload-artifact@v3
       with:
         name: dados_ohlc_btc
