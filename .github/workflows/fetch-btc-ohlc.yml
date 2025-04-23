@@ -21,7 +21,7 @@ jobs:
     - name: Instalar dependências
       run: pip install requests
 
-    - name: Executar script de coleta e salvar JSON
+    - name: Executar script principal (main.py)
       run: python main.py
 
     - name: Verificar arquivos gerados
