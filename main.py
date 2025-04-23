@@ -4,7 +4,9 @@ from src.save_data import save_to_json
 
 data = fetch_ohlc()
 
-timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
-filename = f"bitcoin_ohlc_{timestamp}.json"
-
-save_to_json(data, path="data/bronze", filename=filename)
+if data:
+    timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
+    filename = f"bitcoin_ohlc_{timestamp}.json"
+    save_to_json(data, path="data/bronze", filename=filename)
+else:
+    print("⚠️ Nenhum dado retornado da API. Arquivo JSON não será criado.")
