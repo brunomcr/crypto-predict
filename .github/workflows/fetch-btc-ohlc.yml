@@ -31,7 +31,7 @@ jobs:
 
     - name: Fazer upload do JSON como artefato
       if: success()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: dados_ohlc_btc
         path: data/bronze/*.json
