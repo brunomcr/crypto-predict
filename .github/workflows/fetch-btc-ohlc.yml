@@ -19,7 +19,7 @@ jobs:
         python-version: '3.11'
 
     - name: Instalar dependências
-      run: pip install requests
+      run: pip install requests pandas
 
     - name: Executar script principal (main_actions.py)
       run: python main_actions.py
