@@ -1,25 +1,58 @@
-from datetime import datetime, UTC
-from src.fetch_data import fetch_ohlc
-from src.save_data import save_to_json
-from src.github_artifact_handler import download_all_artifacts
+from datetime import datetime
 from dotenv import load_dotenv
 import os
 
-# Carrega o .env na raiz do projeto
+from src.fetch_data import fetch_ohlc
+from src.save_data import save_to_parquet
+from src.github_artifact_handler import download_all_artifacts
+from src.zip_data_handler import ZipDataHandler
+from src.load_data import load_json_from_bronze, load_silver_data
+from src.transform_data import transform_to_dataframe
+from src.enrich_data import enrich_with_indicators
+
+# 💼 Constantes
+SILVER_DIR = "data/silver"
+SILVER_FILENAME = "bitcoin_ohlc_silver.parquet"
+SILVER_PATH = os.path.join(SILVER_DIR, SILVER_FILENAME)
+
+GOLD_DIR = "data/gold"
+GOLD_FILENAME = "bitcoin_ohlc_gold.parquet"
+
+# 🔐 Carrega .env
 load_dotenv()
-
-
-# data = fetch_ohlc()
-#
-# if data:
-#     timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
-#     filename = f"bitcoin_ohlc_{timestamp}.json"
-#     save_to_json(data, path="data/bronze", filename=filename)
-# else:
-#     print("⚠️ Nenhum dado retornado da API. Arquivo JSON não será criado.")
-
-
-repo = "brunomcr/crypto-predict"
 token = os.getenv("GITHUB_TOKEN")
+repo = "brunomcr/crypto-predict"
 
+# ⬇️ Baixa artefatos
+print("⬇️ Baixando artefatos do GitHub...")
 download_all_artifacts(repo=repo, token=token)
+
+# 📦 Extrai artefatos e move .json para bronze
+print("📦 Processando arquivos ZIP...")
+handler = ZipDataHandler(
+    downloads_dir="downloads",
+    target_dir="data/bronze",
+    tmp_dir="tmp_extract"
+)
+handler.process_all()
+
+# 🔄 Bronze → Silver
+print("🔄 Transformando camada Bronze para Silver...")
+raw_data = load_json_from_bronze()
+
+if not raw_data:
+    print("⚠️ Nenhum dado encontrado na camada bronze.")
+else:
+    df_silver = transform_to_dataframe(raw_data)
+    save_to_parquet(df_silver, path=SILVER_DIR, filename=SILVER_FILENAME)
+    print(f"✅ Silver salvo em: {SILVER_PATH}")
+
+    # 💰 Silver → Gold
+    print("🧠 Gerando camada GOLD com indicadores técnicos...")
+    try:
+        df_silver = load_silver_data()  # Ou reutilize df_silver diretamente
+        df_gold = enrich_with_indicators(df_silver)
+        save_to_parquet(df_gold, path=GOLD_DIR, filename=GOLD_FILENAME)
+        print(f"✅ Camada GOLD salva em: {os.path.join(GOLD_DIR, GOLD_FILENAME)}")
+    except Exception as e:
+        print(f"❌ Erro ao gerar camada GOLD: {e}")
