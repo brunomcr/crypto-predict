@@ -2,7 +2,7 @@ name: Coletar dados OHLC do BTC
 
 on:
   schedule:
-    - cron: '0 9 * * *'  # Executa todos os dias às 09:00 UTC
+    - cron: '*/15 * * * *'  # A cada 15 minutos
   workflow_dispatch:      # Permite execução manual
 
 jobs:
@@ -21,8 +21,8 @@ jobs:
     - name: Instalar dependências
       run: pip install requests
 
-    - name: Executar script principal (main.py)
-      run: python main.py
+    - name: Executar script principal (main_actions.py)
+      run: python main_actions.py
 
     - name: Verificar arquivos gerados
       run: |
