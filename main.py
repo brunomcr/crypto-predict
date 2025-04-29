@@ -9,6 +9,8 @@ from src.zip_data_handler import ZipDataHandler
 from src.load_data import load_json_from_bronze, load_silver_data
 from src.transform_data import transform_to_dataframe
 from src.enrich_data import enrich_with_indicators
+from src.feature_engineering import add_basic_features
+from src.prepare_target import prepare_target
 
 # 💼 Constantes
 SILVER_DIR = "data/silver"
@@ -27,8 +29,8 @@ repo = "brunomcr/crypto-predict"
 print("⬇️ Baixando artefatos do GitHub...")
 download_all_artifacts(repo=repo, token=token)
 
-# 📦 Extrai artefatos e move .json para bronze
-print("📦 Processando arquivos ZIP...")
+# 📆 Extrai artefatos e move .json para bronze
+print("📆 Processando arquivos ZIP...")
 handler = ZipDataHandler(
     downloads_dir="downloads",
     target_dir="data/bronze",
@@ -48,10 +50,12 @@ else:
     print(f"✅ Silver salvo em: {SILVER_PATH}")
 
     # 💰 Silver → Gold
-    print("🧠 Gerando camada GOLD com indicadores técnicos...")
+    print("🦰 Gerando camada GOLD com indicadores técnicos e features...")
     try:
         df_silver = load_silver_data()  # Ou reutilize df_silver diretamente
         df_gold = enrich_with_indicators(df_silver)
+        df_gold = add_basic_features(df_gold)  # ✅ Feature Engineering adicional
+        df_gold = prepare_target(df_gold)  # ✅ Preparação do Target
         save_to_parquet(df_gold, path=GOLD_DIR, filename=GOLD_FILENAME)
         print(f"✅ Camada GOLD salva em: {os.path.join(GOLD_DIR, GOLD_FILENAME)}")
     except Exception as e:
