@@ -1,6 +1,7 @@
 import pandas as pd
 import xgboost as xgb
 import os
+import json
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, roc_auc_score
 
@@ -48,10 +49,10 @@ dtest = xgb.DMatrix(X_test, label=y_test)
 params = {
     'objective': 'binary:logistic',
     'eval_metric': 'logloss',
-    'eta': 0.001,           # Learning rate baixo
+    'eta': 0.0003,           # Learning rate baixo
     'max_depth': 5,        # Controle de overfitting
-    'subsample': 0.8,      # Bagging
-    'colsample_bytree': 0.8,
+    'subsample': 0.68,      # Bagging
+    'colsample_bytree': 0.89,
     'seed': 42,
     'verbosity': 1
 }
@@ -82,5 +83,12 @@ print("\nROC AUC Score:", roc_auc_score(y_test, y_pred_proba))
 os.makedirs("models", exist_ok=True)
 
 # Salva o modelo
-model.save_model("models/xgboost_classifier.json")
+# model.save_model("models/xgboost_classifier.json")
+
+# Salva o modelo otimizado como JSON
+best_model_path = "models/xgboost_classifier_v3.json"
+model.dump_model(best_model_path, dump_format='json')
+print(f"\n✅ Modelo salvo em {best_model_path}")
+
+
 print("\n✅ Modelo salvo em models/xgboost_classifier.json")

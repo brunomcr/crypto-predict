@@ -1,6 +1,7 @@
 import pandas as pd
 import lightgbm as lgb
 import os
+import json
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, roc_auc_score
 
@@ -49,13 +50,13 @@ params = {
     'objective': 'binary',
     'metric': 'binary_logloss',
     'boosting_type': 'gbdt',
-    'learning_rate': 0.001,          # Mais suave para convergência melhor
-    'num_leaves': 31,               # Mais flexibilidade para o modelo
+    'learning_rate': 0.0066,          # Mais suave para convergência melhor
+    'num_leaves': 123,               # Mais flexibilidade para o modelo
     'min_data_in_leaf': 20,
     'feature_fraction': 0.8,
     'bagging_fraction': 0.8,
     'bagging_freq': 5,
-    'max_depth': 5,                 # Limita profundidade, controla overfitting
+    'max_depth': 4,                 # Limita profundidade, controla overfitting
     'seed': 42,
     'verbose': -1
 }
@@ -89,6 +90,7 @@ print("\nROC AUC Score:", roc_auc_score(y_test, y_pred_proba))
 os.makedirs("models", exist_ok=True)
 
 # Salva o modelo otimizado
-best_model_path = "models/lightgbm_classifier_v3.txt"
-model.save_model(best_model_path)
+best_model_path = "models/lightgbm_classifier_v3.json"
+with open(best_model_path, "w") as f:
+    json.dump(model.dump_model(), f, indent=2)
 print(f"\n✅ Melhor modelo salvo em {best_model_path}")
